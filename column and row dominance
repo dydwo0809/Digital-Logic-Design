@@ -1,0 +1,285 @@
+def bin_str(n, l):
+    result = bin(n)[2::]
+    if len(result) < l:
+        result = "0" * (l - len(result)) + result
+    return result
+
+
+def is_dist1(a, b):
+    count = 0
+    for i in range(len(a)):
+        if a[i] == "2" and b[i] != "2":
+            return False
+        if a[i] != b[i]:
+            count += 1
+        if count > 1:
+            return False
+    if count == 1:
+        return True
+    else:
+        return False
+
+
+def combine(a, b):
+    result = ""
+    for i in range(len(a)):
+        if a[i] != b[i]:
+            result += "2"
+        else:
+            result += a[i]
+    return result
+
+
+def temp_pi_cover(PI_set, minterm):
+    templist = [('A', 7), ('A', 9), #('A', 5), ('A', 6),
+                ('B', 5), ('B', 6),
+                ('C', 6), ('C', 8),
+                ('D', 1), ('D', 7),
+                ('E', 1), ('E', 2), ('E', 3), ('E', 4), ('E', 5),
+                ('F', 1), ('F', 2), ('F', 4), ('F', 7),
+                ('G', 2), ('G', 3), ('G', 5), ('G', 6),
+                ('H', 2),
+                ('I', 4), ('I', 7),
+                ('J', 3), ('J', 4),
+                ('K', 3), ('K', 6),
+                ('L', 1), ('L', 5),
+                ]
+    result = {}
+    for i in minterm:
+        temp = set()
+        for j in templist:
+            if j[0] == i and j[1] in PI_set:
+                temp.add(j[1])
+        result[i] = temp
+    return result
+
+
+def temp_minterm_cover(PI_set, minterm):
+    templist = [('A', 7), ('A', 9), #('A', 5), ('A', 6),
+                ('B', 5), ('B', 6),
+                ('C', 6), ('C', 8),
+                ('D', 1), ('D', 7),
+                ('E', 1), ('E', 2), ('E', 3), ('E', 4), ('E', 5),
+                ('F', 1), ('F', 2), ('F', 4), ('F', 7),
+                ('G', 2), ('G', 3), ('G', 5), ('G', 6),
+                ('H', 2),
+                ('I', 4), ('I', 7),
+                ('J', 3), ('J', 4),
+                ('K', 3), ('K', 6),
+                ('L', 1), ('L', 5),
+                ]
+    result = {}
+    for i in PI_set:
+        temp = set()
+        for j in templist:
+            if j[1] == i and j[0] in minterm:
+                temp.add(j[0])
+        result[i] = temp
+    return result
+
+
+def pi_cover(PI_set, minterm, l):
+    if len(PI_set) == 0:
+        return {}
+    result = {}
+
+    for i in minterm:
+        result[i] = set()
+        for j in PI_set:
+            isPI = True
+            for k in range(len(j)):
+                if j[k] == "2" or j[k] == "-":
+                    continue
+                else:
+                    if j[k] != bin_str(i, l)[k]:
+                        isPI = False
+                        break
+            if isPI == True:
+                result[i].add(j)
+    return result
+
+
+def minterm_cover(PI_set, minterm, l):
+    if len(minterm) == 0:
+        return {}
+    result = {}
+
+    for i in PI_set:
+        result[i] = set()
+        for j in minterm:
+            isPI = True
+            for k in range(len(i)):
+                if i[k] == "2" or i[k] == "-":
+                    continue
+                else:
+                    if i[k] != bin_str(j, l)[k]:
+                        isPI = False
+                        break
+            if isPI == True:
+                result[i].add(j)
+    return result
+
+
+def find_epi(PI_set, minterm, l):
+    #PI_covered = pi_cover(PI_set, minterm, l)
+    PI_covered = temp_pi_cover(PI_set, minterm)
+    epi = set()
+    has_epi = set()
+    for i in PI_covered:
+        if len(PI_covered[i]) == 1:
+            for j in PI_covered[i]:
+                epi.add(j)
+
+    for i in epi:
+        for j in PI_covered:
+            if i in PI_covered[j]:
+                has_epi.add(j)
+
+    PI_set -= epi
+    minterm -= has_epi
+
+    return epi
+
+
+def dominance(setA, setB):
+    if (len(setA) - len(setB) == len(setA - setB)):
+        return True
+
+
+def column_dominance(PI_set, minterm, l):
+    #PI_covered = pi_cover(PI_set, minterm, l)
+    PI_covered = temp_pi_cover(PI_set, minterm)
+    remove_column = set()
+    minterm_list = list(minterm)
+    m = len(minterm)
+    for i in range(m - 1):
+        for j in range(i + 1, m):
+            if dominance(PI_covered[minterm_list[i]], PI_covered[minterm_list[j]]):
+                remove_column.add(minterm_list[i])
+                continue
+            elif dominance(PI_covered[minterm_list[j]], PI_covered[minterm_list[i]]):
+                remove_column.add(minterm_list[j])
+
+    if len(remove_column) == 0:
+        return False
+    else:
+        minterm -= remove_column
+        return True
+
+
+def row_dominance(PI_set, minterm, l):
+    #Minterm_covered = minterm_cover(PI_set, minterm, l)
+    Minterm_covered = temp_minterm_cover(PI_set, minterm)
+    remove_row = set()
+    PI_list = list(PI_set)
+    p = len(PI_set)
+    for i in range(p - 1):
+        for j in range(i + 1, p):
+            if dominance(Minterm_covered[PI_list[i]], Minterm_covered[PI_list[j]]):
+                remove_row.add(PI_list[j])
+                continue
+            elif dominance(Minterm_covered[PI_list[j]], Minterm_covered[PI_list[i]]):
+                remove_row.add(PI_list[i])
+    if len(remove_row) == 0:
+        return False
+    else:
+        PI_set -= remove_row
+        return True
+
+
+def solution(minterm):
+    answer = []
+    PI_set = set()
+
+    l = minterm[0]
+
+    minterm = set(minterm[2::])
+
+    num_of1 = {}
+    for i in minterm:
+        n = bin_str(i, l).count("1")
+        if n in num_of1:
+            num_of1[n].add(bin_str(i, l))
+        else:
+            num_of1[n] = set()
+            num_of1[n].add(bin_str(i, l))
+    """
+    num_of1[0] = {"0000"}
+    num_of1[1] = {"0100", "1000"}
+    num_of1[2] = {"1010", "1100"}
+    num_of1[3] = {"1011", "1101"}
+    num_of1[4] = {"1111"}
+    """
+    while (True):
+        Combined = set()
+        next_num_of1 = {}
+        for i in range(l):
+            j = i + 1
+            if i in num_of1 and j in num_of1:
+                for before in num_of1[i]:
+                    for after in num_of1[j]:
+                        if is_dist1(before, after):
+                            Combined.add(before)
+                            Combined.add(after)
+                            tem = combine(before, after)
+                            n = tem.count("1")
+                            if n in next_num_of1:
+                                next_num_of1[n].add(tem)
+                            else:
+                                next_num_of1[n] = set()
+                                next_num_of1[n].add(tem)
+
+        for i in num_of1:
+            for j in num_of1[i]:
+                if j not in Combined:
+                    PI_set.add(j)
+        if len(Combined) == 0:
+            break
+        num_of1 = next_num_of1
+
+    PI_set = {1, 2, 3, 4, 5, 6, 7, 8, 9} #임시
+    minterm = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'} #임시
+
+    print("before")
+    print("PI_set:", PI_set)
+    print("minterm:", minterm)
+
+    print("after")
+    print("-" * 20)
+    while(True):
+        epi = find_epi(PI_set, minterm, l)
+        answer += list(epi)
+        PI_set -= epi
+
+        print("find_epi:", epi)
+        print("PI_set:", PI_set)
+        print("minterm:", minterm)
+
+        col = column_dominance(PI_set, minterm, l)
+        print("column_dominance:", col)
+        if col == True:
+            print("minterm:", minterm)
+        row = row_dominance(PI_set, minterm, l)
+        print("row_dominance:", row)
+        if row == True:
+            print("PI_set:", PI_set)
+
+        print("-" * 20)
+
+        if (col == False) and (row == False):
+            break
+
+    if len(minterm) != 0:
+        print("Need Petrirk's Method:")
+        print("PI_set:", PI_set)
+        print("minterm:", minterm)
+
+    # for i in range(len(answer)):
+    #    answer[i] = answer[i].replace("2", "-")
+    answer.sort()
+
+    return answer
+
+
+minterm = [4, 8, 0, 4, 8, 10, 11, 12, 13, 15]
+print(solution(minterm))
