@@ -2,6 +2,7 @@ pdf가 업로드 되지 않아 여기에 대신 씁니다.
 
 숫자를 주어진 길이의 2진수로 변환하는 함수
 ex) bin_str(4, 4) = “0100”
+
 def bin_str(n, l):
     result = bin(n)[2::]
     if len(result) < l:
@@ -12,6 +13,7 @@ def bin_str(n, l):
 
 두 이진수의 해밍 디스턴스가 1인지 확인하는 함수
 ex) is_dist1(“1011”, “1001”) = True
+
 def is_dist1(a, b):
     count = 0
     for i in range(len(a)):
@@ -30,6 +32,7 @@ def is_dist1(a, b):
 
 2개의 이진수를 통합하는 함수
 ex) combine(“1001”, “1011”) = “1021” ( ‘-‘ 대신 2를 기준으로 정렬하기 위해 2로 바꿈
+
 def combine(a, b):
     result = ""
     for i in range(len(a)):
@@ -54,6 +57,7 @@ ex[10] = {p1, p2}
 .
 .
 이런 식으로 딕셔너리 생성
+
 def pi_cover(PI_set, minterm, l):
     if len(PI_set) == 0:
         return {}
@@ -78,6 +82,7 @@ def pi_cover(PI_set, minterm, l):
 
 위와 반대
 PI값을 key로, minterm값을 value로 갖는 딕셔너리 리턴
+
 def minterm_cover(PI_set, minterm, l):
     if len(minterm) == 0:
         return {}
@@ -103,6 +108,7 @@ def minterm_cover(PI_set, minterm, l):
 epi를 찾는 함수
 epi를 다 찾으면 PI_set에서 구한 epi를 뺌
 찾은 epi값이 들어있는 set을 리턴
+
 def find_epi(PI_set, minterm, l):
     PI_covered = pi_cover(PI_set, minterm, l)
     epi = set()
@@ -125,6 +131,7 @@ def find_epi(PI_set, minterm, l):
 
 앞에 집합이 뒤에 집합을 포함하는지 확인하는 함수
 두 집합이 같을 때도 True를 리턴
+
 def dominance(setA, setB):
     if (len(setA) - len(setB) == len(setA - setB)):
         return True
@@ -135,6 +142,7 @@ def dominance(setA, setB):
 
 column dominance 함수
 PI와 minterm으로 이루어진 두 집합을 인수로 받아서 pi_cover 함수에 넣고 그 결과로 나온value들(각 minterm을 커버하는 pi로 이루어진 set)을 각각 비교하여 둘중 하나가 나머지 하나에 포함되면 포함하는 minterm(pi 양이 많은거)을 제거함. 두 집합이 같을 때도 둘중 하나 제거함. continue 없으면 두 집합이 같을 때 둘 다 제거해서 오류가 발생함. 하나라도 제거한 경우 True를 리턴함
+
 def column_dominance(PI_set, minterm, l):
     PI_covered = pi_cover(PI_set, minterm, l)
     remove_column = set()
@@ -160,6 +168,7 @@ def column_dominance(PI_set, minterm, l):
 row dominance 함수
 PI 값을 key로, 각 PI가 커버하는 minterm으로 이루어진 set을 value로 갖는 딕셔너리를 만들고 value끼리 비교해서 포함되는(작은거) PI를 제거함.
 나머지는 column dominance 함수와 같음. 
+
 def row_dominance(PI_set, minterm, l):
     Minterm_covered = minterm_cover(PI_set, minterm, l)
     remove_row = set()
@@ -182,6 +191,7 @@ def row_dominance(PI_set, minterm, l):
 
 
 minterm 입력받고 각 minterm 이진수로 바꿔서 1의 개수를 key로, 각 민턴의 set을 value로 갖는 딕셔너리 num_of1 생성
+
 def solution(minterm):
     answer = []
     PI_set = set()
